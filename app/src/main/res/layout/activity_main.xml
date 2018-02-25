@@ -1,0 +1,523 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp"
+    tools:context="id.aashari.code.miband2.Activities.MainActivity">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        android:padding="5dp">
+
+        <Button
+            android:id="@+id/miBand_show_addr"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.1"
+            android:background="@drawable/miband2"
+            android:gravity="bottom|center"
+            android:text="Show Config"
+            android:textAppearance="@style/TextAppearance.AppCompat.Widget.Button.Borderless.Colored"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="10sp"
+            android:visibility="visible" />
+
+        <EditText
+            android:id="@+id/txtPhysicalAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.1"
+            android:editable="false"
+            android:hint="Waiting for Connection"
+            android:textSize="14sp"
+            android:visibility="visible" />
+
+        <LinearLayout
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/txtState2"
+                android:layout_width="match_parent"
+                android:layout_height="34dp"
+                android:layout_weight="030"
+                android:autoText="true"
+                android:background="@drawable/bluetooth"
+                android:paddingTop="24dp"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.AppCompat"
+                android:textColor="@android:color/black"
+                android:textIsSelectable="false"
+                android:visibility="visible" />
+
+            <TextView
+                android:id="@+id/txtState"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="030"
+                android:autoText="false"
+                android:gravity="center_vertical|center_horizontal"
+                android:text="Connecting"
+                android:textAlignment="gravity"
+                android:textAppearance="@style/TextAppearance.AppCompat"
+                android:textColor="@color/colorPrimaryDark"
+                android:textIsSelectable="false"
+                android:visibility="visible" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp">
+
+        <Button
+            android:id="@+id/btnStartConnecting"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="match_parent"
+            android:layout_height="121dp"
+            android:layout_weight="1"
+            android:background="@drawable/bluetooth_off"
+            android:gravity="bottom"
+            android:text="Reconnect"
+            android:textAlignment="center"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/heartLy"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical|center_horizontal"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <Button
+                android:id="@+id/btnGetHeartRate"
+                android:layout_width="127dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.3"
+                android:background="@drawable/heart3d"
+                android:elevation="24dp"
+                android:gravity="center_vertical|center_horizontal|center"
+                android:text="Read Heart Rate"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+                android:textSize="14sp"
+                android:visibility="visible" />
+
+            <TextView
+                android:id="@+id/txtBpm"
+                android:layout_width="match_parent"
+                android:layout_height="41dp"
+                android:layout_weight="0.3"
+                android:scrollHorizontally="false"
+                android:text="bpm"
+                android:textAlignment="center"
+                android:textStyle="bold"
+                android:typeface="monospace" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/bpmLx"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:baselineAligned="false"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/alarmSet"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_weight="1"
+                android:text="Alarm Setting"
+                android:textAlignment="center"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="154dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/maxBpm"
+                    android:layout_width="47dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:text="Max. bpm"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/maxBpmAlarm"
+                    android:layout_width="54dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:editable="false"
+                    android:ems="10"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:inputType="number"
+                    android:text="190" />
+
+                <SeekBar
+                    android:id="@+id/setMaxbpmAlarm"
+                    android:layout_width="280dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    android:layout_weight="1"
+                    android:max="200"
+                    android:progress="180" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/minBpm"
+                    android:layout_width="36dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:text="Min. bpm"
+                    android:textAlignment="gravity"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/minBpmAlarm"
+                    android:layout_width="41dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:editable="false"
+                    android:ems="10"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:inputType="number"
+                    android:text="40" />
+
+                <SeekBar
+                    android:id="@+id/setMinbpmAlarm"
+                    android:layout_width="267dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    android:layout_weight="1"
+                    android:max="200"
+                    android:progress="40" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="118dp"
+        android:gravity="right"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/FBatLy"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="198dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal"></LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/findL"
+                android:layout_width="176dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="right"
+                android:visibility="visible">
+
+                <Button
+                    android:id="@+id/btnStartVibrate"
+                    android:layout_width="match_parent"
+                    android:layout_height="108dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/find_iconjpg"
+                    android:baselineAligned="false"
+                    android:gravity="bottom|left|center_horizontal|fill_horizontal|center|start|end"
+                    android:text="Find / Start Vibrating"
+                    android:textAlignment="gravity"
+                    android:textSize="10sp"
+                    android:visibility="visible" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/batL"
+                android:layout_width="182dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="left"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <Button
+                    android:id="@+id/btnGetBatteryInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="102dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/batery_icon"
+                    android:elevation="24dp"
+                    android:gravity="bottom|center"
+                    android:text="Check Battery"
+                    android:textSize="10sp"
+                    android:visibility="visible" />
+
+                <TextView
+                    android:id="@+id/textBat"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Level %"
+                    android:textAlignment="center"
+                    android:textAllCaps="false"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:typeface="monospace" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="177dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal"></LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/timerLx"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TableLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1">
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/timerSet"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Timer Setting"
+                            android:textAlignment="center"
+                            android:textStyle="bold" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/timerMin"
+                                android:layout_width="39dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:text="Mnts" />
+
+                            <EditText
+                                android:id="@+id/readMin"
+                                android:layout_width="33dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:ems="10"
+                                android:gravity="center_vertical|center_horizontal|center"
+                                android:inputType="number"
+                                android:text="1" />
+
+                            <SeekBar
+                                android:id="@+id/setTimeerMin"
+                                style="@style/Widget.AppCompat.SeekBar.Discrete"
+                                android:layout_width="309dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="40"
+                                android:max="60"
+                                android:progress="1" />
+
+                        </LinearLayout>
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/timerHour"
+                                android:layout_width="47dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:text="Hours" />
+
+                            <EditText
+                                android:id="@+id/readHour"
+                                android:layout_width="39dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:ems="10"
+                                android:gravity="center_vertical|center_horizontal|center"
+                                android:inputType="textPersonName"
+                                android:text="00"
+                                android:textAlignment="gravity" />
+
+                            <SeekBar
+                                android:id="@+id/setTimerHour"
+                                style="@style/Widget.AppCompat.SeekBar.Discrete"
+                                android:layout_width="279dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:layout_weight="1"
+                                android:max="24"
+                                android:progress="0" />
+
+                        </LinearLayout>
+                    </TableRow>
+
+                </TableLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/ubiLx"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/ubiCfg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="UbiDots Config"
+                android:textAlignment="center" />
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/ubiid"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ubidots ID" />
+
+                    <EditText
+                        android:id="@+id/ubiID"
+                        android:layout_width="281dp"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:inputType="textVisiblePassword"
+                        android:textSize="12sp" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/heartKey"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Heart Key" />
+
+                    <EditText
+                        android:id="@+id/ubiHeartKey"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:inputType="none|textVisiblePassword" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/batKey"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Battery Key" />
+
+                    <EditText
+                        android:id="@+id/ubiBatKey"
+                        android:layout_width="wrap_content"
+                        android:layout_height="56dp"
+                        android:ems="10"
+                        android:inputType="textVisiblePassword" />
+
+                </TableRow>
+
+            </TableLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
