@@ -22,6 +22,7 @@ import android.os.CountDownTimer;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -29,6 +30,9 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.ubidots.ApiClient;
+import com.ubidots.Variable;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -47,42 +51,29 @@ import java.util.concurrent.ExecutionException;
 import id.aashari.code.miband2.Helpers.CustomBluetoothProfile;
 import id.aashari.code.miband2.R;
 
-import com.ubidots.ApiClient;
-import com.ubidots.Variable;
-
 public class MainActivity extends Activity {
-    private final static int REQUEST_ENABLE_BT = 1;
-    /*    private String KEY= "A1E-0ee54d1181c8a871188d4ddd4fdb2f2d3ef8";
-        private String BATTERY_KEY= "5a15afe3c03f977cb0361e49";
-        private String HEART_RATE_ID= "5a60eebfc03f971830968752";*/
-    private String KEY; //= "A1E-0ee54d1181c8a871188d4ddd4fdb2f2d3ef8";
-    private String BATTERY_KEY; //= "5a15afe3c03f977cb0361e49";
-    private String HEART_RATE_ID;//= "5a60eebfc03f971830968752";
+
+
+    final static String path = Environment.getExternalStorageDirectory().getAbsolutePath();
     private static final int ABSOLUTE_MAX_BPM = 200;
     private static final int ABSOLUTE_MIN_BPM = 40;
-    private Integer MaxBpmAlarm = 190;
-    private Integer MinBpmAlarm = 40;
-    private Integer Min_TIMER = 20;
-    private Integer Hour_TIMER = 0;
-
-
+    private final static int REQUEST_ENABLE_BT = 1;
     // Storage Permissions
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private final static String filesettsname = "settings.txt";
+    private static final int MY_PERMISSIONS_REQUEST_SEND_SMS = 0;
+    private static final int PERMISSION_REQUEST_CODE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-    final static String path = Environment.getExternalStorageDirectory().getAbsolutePath();
-    private final static String filesettsname = "settings.txt";
     Context context = this;
-
     Boolean isListeningHeartRate = false;
     Boolean isListeningBateryLevel = false;
     Boolean vibrate = false;
     Boolean timerHasStarted = false;
     Integer mibandTimeOut = 30000;
     TimerTask timerTask;
-
     Timer timer = new Timer();
     CountDownTimer miBandTimeOut = new CountDownTimer(mibandTimeOut, 5000) {
         public void onTick(long millisUntilFinished) {
@@ -101,19 +92,30 @@ public class MainActivity extends Activity {
 
         }
     };
-
-
+    String message;
+    SmsManager smsManager = SmsManager.getDefault();
     BluetoothAdapter bluetoothAdapter;
     BluetoothGatt bluetoothGatt;
     BluetoothDevice bluetoothDevice;
-
     Button btnStartConnecting, btnGetBatteryInfo, btnGetHeartRate, btnStartVibrate, btnMiBand_show_cfg;
-    EditText txtPhysicalAddress, maxBpmAlarm, minBpmAlarm, readMin, readHour, ubiID, ubiHeartID, ubiBatID;
+    EditText txtPhysicalAddress, maxBpmAlarm, minBpmAlarm, readMin, readHour, ubiID, ubiHeartID, ubiBatID, txtPhone;
     TextView txtState, txtStateImg, txtBpm, txtBat;
     View heartLy, FBatLy, ubiLx, timerLx, bpmLx;
     SeekBar setMinBpm, setMaxBpm, setTimerMin, setTimerHour;
-    int batlevel, bpm;
-
+    int battlevel, bpm;
+    /*private String KEY= "A1E-0ee54d1181c8a871188d4ddd4fdb2f2d3ef8";
+    private String BATTERY_KEY= "5a15afe3c03f977cb0361e49";
+    private String HEART_RATE_ID= "5a60eebfc03f971830968752";
+    private String phoneNo = "938757183";
+*/
+    private String KEY;//= "A1E-0ee54d1181c8a871188d4ddd4fdb2f2d3ef8";
+    private String BATTERY_KEY;// = "5a15afe3c03f977cb0361e49";
+    private String HEART_RATE_ID;//= "5a60eebfc03f971830968752";
+    private String phoneNo;//= "938757183";
+    private Integer MaxBpmAlarm = 190;
+    private Integer MinBpmAlarm = 40;
+    private Integer Min_TIMER = 20;
+    private Integer Hour_TIMER = 0;
     final BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
 
         @Override
@@ -159,20 +161,20 @@ public class MainActivity extends Activity {
             super.onCharacteristicRead(gatt, characteristic, status);
             Log.v("test", "onCharacteristicRead");
             final byte[] data = characteristic.getValue();
-            batlevel = data[1];
-            Log.v("test", "listen battery batlevel xubiz : " + batlevel + "%");
-            if (batlevel > 0) {
-                // Toast.makeText(this, "battery info: " + batlevel, Toast.LENGTH_SHORT).show();
+            battlevel = (int) data[1];
+            Log.v("test", "listen battery battlevel xubiz : " + battlevel + "%");
+            if (battlevel > 0) {
+                // Toast.makeText(this, "battery info: " + battlevel, Toast.LENGTH_SHORT).show();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        txtBat.setText(batlevel + "%");
+                        txtBat.setText(battlevel + "%");
                     }
                 });
                 boolean goodKeyAndVar = false;
                 try {
-                    Log.v("charRead", "check point! trying to  battery batlevel: " + batlevel + "%");
-                    String[] keyvarArray = new String[]{KEY, BATTERY_KEY, batlevel + ""};
+                    Log.v("charRead", "check point! trying to  battery battlevel: " + battlevel + "%");
+                    String[] keyvarArray = new String[]{KEY, BATTERY_KEY, battlevel + ""};
                     goodKeyAndVar = new ApiUbidots_VerifyVarId().execute(keyvarArray).get();
                     Log.v("charRead", "var return: var good key n var? : " + goodKeyAndVar);
                 } catch (InterruptedException e) {
@@ -181,7 +183,7 @@ public class MainActivity extends Activity {
                     Log.v("charRead_ExecExcept", "the exception is " + e.toString());
                 }
                 if (goodKeyAndVar) {
-                    new ApiUbidots().execute(new String[]{KEY, BATTERY_KEY, batlevel + ""});
+                    new ApiUbidots().execute(KEY, BATTERY_KEY, battlevel + "");
                 }
             }
         }
@@ -200,6 +202,14 @@ public class MainActivity extends Activity {
             final byte[] data = characteristic.getValue();
             bpm = (int) data[1];
             miBandTimeOut.cancel();
+            if (bpm >= MaxBpmAlarm) {
+                message = "The last heart rate value of " + bpm + " it's exceeding the " + MaxBpmAlarm + " bmp Maximum Value";
+                sendSMSMessage();
+            }
+            if (bpm <= MinBpmAlarm) {
+                message = "The last heart rate value of " + bpm + " it's under the " + MaxBpmAlarm + " bmp Maximum Value";
+                sendSMSMessage();
+            }
             final String hrbpm = String.valueOf(bpm) + " bpm";
             Log.v("charChanged", "got heartrate bpm: " + hrbpm);
             if (bpm <= 0) {
@@ -220,7 +230,7 @@ public class MainActivity extends Activity {
                     e.printStackTrace();
                 }
                 if (goodKeyAndVar) {
-                    new ApiUbidots().execute(new String[]{KEY, HEART_RATE_ID, String.valueOf(bpm)});
+                    new ApiUbidots().execute(KEY, HEART_RATE_ID, String.valueOf(bpm));
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -228,12 +238,12 @@ public class MainActivity extends Activity {
 
                         }
                     });
-                    /*runOnUiThread(new Runnable() {
+                    runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            getBatteryStatus();
+                            getBatteryStatus(txtBat);
                         }
-                    });*/
+                    });
                 }
             }
         }
@@ -270,44 +280,59 @@ public class MainActivity extends Activity {
 
     };
 
+    /**
+     * Checks if the app has permission to write to device storage
+     * <p>
+     * If the app does not has permission then the user will be prompted to grant permissions
+     *
+     * @param activity
+     */
+    public static void verifyStoragePermissions(Activity activity) {
+        // Check if we have write permission
+        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            Toast.makeText(activity, "This permission is needed to be able to save application settings.", Toast.LENGTH_LONG).show();
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
+            Log.v("media", "has permitions");
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
         verifyStoragePermissions(this);
         isExternalStorageWritable();
         isExternalStorageReadable();
-        //writeSettings(this, filesettsname);
-//        readSettings(this, filesettsname);
 
-        setContentView(R.layout.activity_main);
 
         initializeBluetoothDevice();
         initializeUIComponents();
 
         // writeSettings(this, filesettsname);
         initializeEvents();
-        //   writeSettings(this, filesettsname);
+        //  writeSettings(this, filesettsname);
         readSettings(this, filesettsname);
         getBoundedDevice();
         startConnecting();
         ShowConnected();
 
-        timerTask=new TimerTask()
-        {
-            public void run()
-            {
+        timerTask = new TimerTask() {
+            public void run() {
                 startScanHeartRate();
-                //getBatteryStatus();
             }
         };
-        timer.scheduleAtFixedRate( timerTask,15000, Min_TIMER * 60000 + Hour_TIMER * 3600000);
-      //  timerLaucher();
+        timer.scheduleAtFixedRate(timerTask, 15000, Min_TIMER * 60000 + Hour_TIMER * 3600000);
 
-        //    btnGetBatteryInfo.performClick();
+
     }
-
-
 
     /* Checks if external storage is available for read and write */
     public boolean isExternalStorageWritable() {
@@ -329,28 +354,6 @@ public class MainActivity extends Activity {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Checks if the app has permission to write to device storage
-     * <p>
-     * If the app does not has permission then the user will be prompted to grant permissions
-     *
-     * @param activity
-     */
-    public static void verifyStoragePermissions(Activity activity) {
-        // Check if we have write permission
-        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    activity,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-            Log.v("media", "has permitions");
-        }
     }
 
     void start() {
@@ -380,8 +383,10 @@ public class MainActivity extends Activity {
 
     void initializeBluetoothDevice() {
         // Ask for location permission if not already allowed
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "We need Bluetooth to be able to connect to MiBand2 .", Toast.LENGTH_LONG).show();
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+        }
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
             // Device does not support Bluetooth
@@ -423,6 +428,7 @@ public class MainActivity extends Activity {
         setMinBpm = (SeekBar) findViewById(R.id.setMinbpmAlarm);
         setTimerMin = (SeekBar) findViewById(R.id.setTimeerMin);
         setTimerHour = (SeekBar) findViewById(R.id.setTimerHour);
+        txtPhone = (EditText) findViewById(R.id.sosTelef);
 
     }
 
@@ -546,7 +552,7 @@ public class MainActivity extends Activity {
         });
 //todo caixas de texto mudam seekBars
         setMinBpm.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            int value = MinBpmAlarm;
+            int value = setMinBpm.getProgress(); //todo aparece 110, sempre na cx texto
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -618,15 +624,13 @@ public class MainActivity extends Activity {
                 readMin.setText("" + value);
                 Min_TIMER = value;
                 timer.cancel();
-                timerTask=new TimerTask()
-                {
-                    public void run()
-                    {
+                timerTask = new TimerTask() {
+                    public void run() {
                         startScanHeartRate();
                     }
                 };
-                timer=new Timer();
-                timer.scheduleAtFixedRate( timerTask,15000, Min_TIMER * 60000 + Hour_TIMER * 3600000);
+                timer = new Timer();
+                timer.scheduleAtFixedRate(timerTask, 15000, Min_TIMER * 60000 + Hour_TIMER * 3600000);
 
                 Toast.makeText(getApplicationContext(), "Stopped tracking seekbar", Toast.LENGTH_SHORT).show();
 
@@ -654,16 +658,21 @@ public class MainActivity extends Activity {
                 readHour.setText("" + value);
                 Hour_TIMER = value;
                 timer.cancel();
-                timerTask=new TimerTask()
-                {
-                    public void run()
-                    {
+                timerTask = new TimerTask() {
+                    public void run() {
                         startScanHeartRate();
                     }
                 };
-                timer=new Timer();
-                timer.scheduleAtFixedRate( timerTask,15000, Min_TIMER * 60000 + Hour_TIMER * 3600000);
+                timer = new Timer();
+                timer.scheduleAtFixedRate(timerTask, 15000, Min_TIMER * 60000 + Hour_TIMER * 3600000);
                 //  Toast.makeText(getApplicationContext(), "Stopped tracking seekbar", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        txtPhone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.v("txtphone", "phone number modified.");
             }
         });
     }
@@ -703,7 +712,7 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 btnStartConnecting.setVisibility(View.VISIBLE);
-                txtBpm.setVisibility(View.GONE);
+                //txtBpm.setVisibility(View.GONE);
                 txtPhysicalAddress.setVisibility(View.INVISIBLE);
                 bpmLx.setVisibility(View.GONE);
                 timerLx.setVisibility(View.GONE);
@@ -742,10 +751,10 @@ public class MainActivity extends Activity {
     void startScanHeartRate() {
         if (bluetoothGatt != null) {
             Log.v("test", "gatt is " + bluetoothGatt.toString());
-         //   Toast.makeText(this, "gatt is is " + bluetoothGatt.toString(), Toast.LENGTH_SHORT).show();
+            //   Toast.makeText(this, "gatt is is " + bluetoothGatt.toString(), Toast.LENGTH_SHORT).show();
             if (bluetoothGatt.getService(CustomBluetoothProfile.Basic.service) == null) {
                 Log.v("test", "...waiting for miBand2 bpm answer...");
-          //      Toast.makeText(this, "...waiting for miBand2 bpm answer...", Toast.LENGTH_SHORT).show();
+                //      Toast.makeText(this, "...waiting for miBand2 bpm answer...", Toast.LENGTH_SHORT).show();
                 isListeningHeartRate = true;
                 return;
             }
@@ -786,27 +795,27 @@ public class MainActivity extends Activity {
 
         BluetoothGattService serviceTemp;
         BluetoothGattCharacteristic bchar;
-        byte[] z;
+
         if (bluetoothGatt != null) {
             Log.v("test", "gatt is " + bluetoothGatt.toString());
             Toast.makeText(this, "gatt is is " + bluetoothGatt.toString(), Toast.LENGTH_SHORT).show();
-             serviceTemp = bluetoothGatt.getService(CustomBluetoothProfile.Basic.service);
+            serviceTemp = bluetoothGatt.getService(CustomBluetoothProfile.Basic.service);
             if (serviceTemp == null) {
                 Log.v("test", "...waiting for miBand2 battery level answer...");
                 Toast.makeText(this, "...waiting for miBand2 battery level answer...", Toast.LENGTH_SHORT).show();
                 isListeningBateryLevel = true;
                 return;
             }
-           Log.v("test", "gatt service is " + serviceTemp.toString());
+            Log.v("test", "gatt service is " + serviceTemp.toString());
             Toast.makeText(this, "gatt service is is " + serviceTemp.toString(), Toast.LENGTH_SHORT).show();
 
-             bchar = serviceTemp.getCharacteristic(CustomBluetoothProfile.Basic.batteryCharacteristic);
-            z = bchar.getValue();
-
+            bchar = serviceTemp.getCharacteristic(CustomBluetoothProfile.Basic.batteryCharacteristic);
+            byte[] z = bchar.getValue();
             if (!bluetoothGatt.readCharacteristic(bchar)) {
                 Toast.makeText(this, "Failed get battery info", Toast.LENGTH_SHORT).show();
             } else {
                 if (z != null) {
+                    battlevel = (int) z[1];
                     boolean goodKeyAndVar = false;
                     try {
                         String[] keyvarArray = new String[]{KEY, BATTERY_KEY};
@@ -817,11 +826,10 @@ public class MainActivity extends Activity {
                         e.printStackTrace();
                     }
                     if (goodKeyAndVar) {
-                        new ApiUbidots().execute(new String[]{KEY, BATTERY_KEY, z.toString()});
-                        batlevel = (int) z[1];
-                        String bat = String.valueOf(batlevel) + "%";
+                        new ApiUbidots().execute(KEY, BATTERY_KEY, battlevel + "");
+                        String bat = String.valueOf(battlevel) + "%";
                         txtBat.setText(bat);
-                        Toast.makeText(this, "battery info: " + batlevel, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "battery info: " + battlevel, Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -860,17 +868,224 @@ public class MainActivity extends Activity {
         }
     }
 
+    public void readSettings(Context context, String filename) {
+        int index;
+        try {
+            FileInputStream fs = context.openFileInput(filename);
+            InputStreamReader isr = new InputStreamReader(fs, "UTF-8");
+            BufferedReader br = new BufferedReader(isr);
+            String line = br.readLine();
+            if (line != null) {
+                //  index = line.indexOf("=");
+                KEY = line.substring(line.indexOf("=") + 2);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ubiID.setText(KEY);
+                    }
+                });
+            }
+            line = br.readLine();
+            if (line != null) {
+                BATTERY_KEY = line.substring(line.indexOf("=") + 2);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ubiBatID.setText(BATTERY_KEY);
+                    }
+                });
+            }
+            line = br.readLine();
+            if (line != null) {
+                HEART_RATE_ID = line.substring(line.indexOf("=") + 2);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ubiHeartID.setText(HEART_RATE_ID);
+                    }
+                });
+            }
+            line = br.readLine();
+            if (line != null) {
+                index = line.indexOf("=");
+                MaxBpmAlarm = Integer.parseInt(line.substring(index + 2));
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        maxBpmAlarm.setText("" + MaxBpmAlarm);
+                        setMaxBpm.setProgress(MaxBpmAlarm);
+                    }
+                });
+
+            }
+            line = br.readLine();
+            if (line != null) {
+                index = line.indexOf("=");
+                MinBpmAlarm = Integer.parseInt(line.substring(index + 2));
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        minBpmAlarm.setText("" + MinBpmAlarm);
+                        setMinBpm.setProgress(MinBpmAlarm);
+                    }
+                });
+            }
+            line = br.readLine();
+            if (line != null) {
+                index = line.indexOf("=");
+                Min_TIMER = Integer.parseInt(line.substring(index + 2));
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        readMin.setText("" + Min_TIMER);
+                        setTimerMin.setProgress(Min_TIMER);
+                    }
+                });
+            }
+            line = br.readLine();
+            if (line != null) {
+                index = line.indexOf("=");
+                Hour_TIMER = Integer.parseInt(line.substring(index + 2));
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        readHour.setText("" + Hour_TIMER);
+                        setTimerHour.setProgress(Hour_TIMER);
+                    }
+                });
+            }
+            line = br.readLine();
+            if (line != null) {
+                index = line.indexOf("=");
+                phoneNo = line.substring(index + 2);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        txtPhone.setText(phoneNo);
+                    }
+                });
+            }
+            fs.close();
+            Toast.makeText(getBaseContext(),
+                    "Done reading SD 'mysdfile.txt'",
+                    Toast.LENGTH_SHORT).show();
+        } catch (FileNotFoundException e) {
+            Log.v("write file not found", e.getMessage());
+        } catch (UnsupportedEncodingException e) {
+            Log.v("UnsupportedEncoding", e.getMessage());
+        } catch (IOException e) {
+            Log.v("IO exception", e.getMessage());
+        }
+
+    }
+
+    public void writeSettings(Context context, String fileName) {
+        try {
+            File file = new File(path, fileName);
+            if (!file.exists()) {
+                file.createNewFile();
+            } else {
+                Log.v("writing file", "Done file exists in " + path);
+            }
+
+            FileOutputStream fs = context.openFileOutput(fileName, Context.MODE_PRIVATE);
+
+            OutputStreamWriter osw = new OutputStreamWriter(fs, "UTF-8");
+            String s = "KEY = " + KEY + "\n"
+                    + "BATTERY_KEY = " + BATTERY_KEY + "\n"
+                    + "HEART_RATE_ID = " + HEART_RATE_ID + "\n"
+                    + "MaxBpmAlarm = " + MaxBpmAlarm + "\n"
+                    + "MinBpmAlarm = " + MinBpmAlarm + "\n"
+                    + "Min_TIMER = " + Min_TIMER + "\n"
+                    + "Hour_TIMER = " + Hour_TIMER + "\n"
+                    + "SOS_PHONE = " + phoneNo;
+
+
+            fs.write(s.getBytes());
+            fs.close();
+            // Tell the media scanner about the new file so that it is
+            // immediately available to the user.
+            MediaScannerConnection.scanFile(this,
+                    new String[]{file.toString()}, null,
+                    new MediaScannerConnection.OnScanCompletedListener() {
+                        public void onScanCompleted(String path, Uri uri) {
+                            Log.i("ExternalStorage", "Scanned " + path + ":");
+                            Log.i("ExternalStorage", "-> uri=" + uri);
+                        }
+                    });
+
+            Toast.makeText(getBaseContext(),
+                    "Done writing SD 'mysdfile.txt'",
+                    Toast.LENGTH_SHORT).show();
+            Log.v("writing file", "Done writing to path " + path);
+        } catch (FileNotFoundException e) {
+            Log.v("write file not found", e.getMessage());
+        } catch (UnsupportedEncodingException e) {
+            Log.v("UnsupportedEncoding", e.getMessage());
+        } catch (IOException e) {
+            Log.v("IO exception", e.getMessage());
+        }
+
+    }
+
+    //todo send ui toasts, with butter on it if its possible
+    protected void sendSMSMessage() {
+        Log.v("sendmsg", "we're in!");
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+            Log.v("sendmsg", "true-> (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED)");
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.SEND_SMS)) {
+                //      Toast.makeText(getApplicationContext(), "This permission is needed to be able to send SOS SMS.", Toast.LENGTH_LONG).show();
+                Log.v("sendmsg", "true-> (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.SEND_SMS))");
+            } else {
+                //     Toast.makeText(getApplicationContext(), "This permission is needed to be able to send SOS SMS.", Toast.LENGTH_LONG).show();
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, MY_PERMISSIONS_REQUEST_SEND_SMS);
+                Log.v("sendmsg", "ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, MY_PERMISSIONS_REQUEST_SEND_SMS);");
+            }
+        } else {
+            Log.v("sendmsg", "true-> (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED)");
+            //   Toast.makeText(getApplicationContext(), "Please Enter a Valid Phone Number", Toast.LENGTH_SHORT).show();
+            Log.v("sendMessage", "sms sent");
+            //  smsManager = SmsManager.getDefault();
+            smsManager.sendTextMessage(phoneNo, null, message, null, null);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_SEND_SMS: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.v("sendmsg", "true->(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED");
+                    smsManager = SmsManager.getDefault();
+                    if (phoneNo.isEmpty()) {
+                        Toast.makeText(getApplicationContext(), "Please Enter a Valid Phone Number", Toast.LENGTH_SHORT).show();
+                        Log.v("onReqPermResult", "sms failed , phone number is empty");
+                    } else {
+                        smsManager.sendTextMessage(phoneNo, null, message, null, null);
+                        Toast.makeText(getApplicationContext(), "SMS sent.", Toast.LENGTH_LONG).show();
+                        Log.v("onReqPermResult", "sms sent");
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "SMS faild, please try again.", Toast.LENGTH_LONG).show();
+                    Log.v("onReqPermResult", "dont have permission to send sms ");
+                    return;
+                }
+            }
+        }
+
+    }
+
     public class ApiUbidots extends AsyncTask<String, Void, Void> {
 
         @Override
         protected Void doInBackground(String... params) {
             ApiClient apiClient = new ApiClient(params[0]);
             Variable variable = apiClient.getVariable(params[1]);
-            Log.v("test", "sending Ubidots  bit value: " + params[2] + " to " + params[1] + " Variable");
+            Log.v("test", "sending Ubidots  rate value: " + params[2] + " to " + params[1] + " Variable");
             if (variable != null) {
                 variable.saveValue(Integer.valueOf(params[2]));
             } else {
-                Log.v("UBI_SEND_FAIL", "FAIL to send Ubidots  bit value: " + params[2] + " to " + params[1] + " Variable");
+                Log.v("UBI_SEND_FAIL", "FAIL to send Ubidots  rate value: " + params[2] + " to " + params[1] + " Variable");
             }
             return null;
         }
@@ -965,160 +1180,4 @@ public class MainActivity extends Activity {
         }
     }
 
-    public void readSettings(Context context, String filename) {
-        int index;
-        try {
-            FileInputStream fs = context.openFileInput(filename);
-            InputStreamReader isr = new InputStreamReader(fs, "UTF-8");
-            BufferedReader br = new BufferedReader(isr);
-            String line = br.readLine();
-            if (line != null) {
-                //  index = line.indexOf("=");
-                KEY = line.substring(line.indexOf("=") + 2);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        ubiID.setText(KEY);
-                    }
-                });
-            }
-            line = br.readLine();
-            if (line != null) {
-                BATTERY_KEY = line.substring(line.indexOf("=") + 2);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        ubiBatID.setText(BATTERY_KEY);
-                    }
-                });
-            }
-            line = br.readLine();
-            if (line != null) {
-                HEART_RATE_ID = line.substring(line.indexOf("=") + 2);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        ubiHeartID.setText(HEART_RATE_ID);
-                    }
-                });
-            }
-            line = br.readLine();
-            if (line != null) {
-                index = line.indexOf("=");
-                MaxBpmAlarm = Integer.parseInt(line.substring(index + 2));
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        maxBpmAlarm.setText("" + MaxBpmAlarm);
-                        setMaxBpm.setProgress(MaxBpmAlarm);
-                    }
-                });
-
-            }
-            line = br.readLine();
-            if (line != null) {
-                index = line.indexOf("=");
-                MinBpmAlarm = Integer.parseInt(line.substring(index + 2));
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        minBpmAlarm.setText("" + MinBpmAlarm);
-                        setMinBpm.setProgress(MinBpmAlarm);
-                    }
-                });
-            }
-            line = br.readLine();
-            if (line != null) {
-                index = line.indexOf("=");
-                Min_TIMER = Integer.parseInt(line.substring(index + 2));
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        readMin.setText("" + Min_TIMER);
-                        setTimerMin.setProgress(Min_TIMER);
-                    }
-                });
-            }
-            line = br.readLine();
-            if (line != null) {
-                index = line.indexOf("=");
-                Hour_TIMER = Integer.parseInt(line.substring(index + 2));
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        readHour.setText("" + Hour_TIMER);
-                        setTimerHour.setProgress(Hour_TIMER);
-                    }
-                });
-            }
-            fs.close();
-            Toast.makeText(getBaseContext(),
-                    "Done reading SD 'mysdfile.txt'",
-                    Toast.LENGTH_SHORT).show();
-        } catch (FileNotFoundException e) {
-            Log.v("write file not found", e.getMessage());
-        } catch (UnsupportedEncodingException e) {
-            Log.v("UnsupportedEncoding", e.getMessage());
-        } catch (IOException e) {
-            Log.v("IO exception", e.getMessage());
-        }
-
-    }
-
-    public void writeSettings(Context context, String fileName) {
-        try {
-            File file = new File(path, fileName);
-            if (!file.exists()) {
-                file.createNewFile();
-            } else {
-                Log.v("writing file", "Done file exists in " + path);
-            }
-
-            FileOutputStream fs = context.openFileOutput(fileName, Context.MODE_PRIVATE);
-
-            OutputStreamWriter osw = new OutputStreamWriter(fs, "UTF-8");
-            String s = "KEY = " + KEY + "\n"
-                    + "BATTERY_KEY = " + BATTERY_KEY + "\n"
-                    + "HEART_RATE_ID = " + HEART_RATE_ID + "\n"
-                    + "MaxBpmAlarm = " + MaxBpmAlarm + "\n"
-                    + "MinBpmAlarm = " + MinBpmAlarm + "\n"
-                    + "Min_TIMER = " + Min_TIMER + "\n"
-                    + "Hour_TIMER = " + Hour_TIMER + "\n";
-
-       /*     osw.append("KEY = " + KEY + "\n"
-                    + "BATTERY_KEY = " + BATTERY_KEY + "\n"
-                    + "HEART_RATE_ID = " + HEART_RATE_ID + "\n"
-                    + "MaxBpmAlarm = " + MaxBpmAlarm + "\n"
-                    + "MinBpmAlarm = " + MinBpmAlarm + "\n"
-                    + "Min_TIMER = " + Min_TIMER + "\n"
-                    + "Hour_TIMER = " + Hour_TIMER + "\n");
-            osw.flush();
-            osw.close();*/
-
-            fs.write(s.getBytes());
-            fs.close();
-            // Tell the media scanner about the new file so that it is
-            // immediately available to the user.
-            MediaScannerConnection.scanFile(this,
-                    new String[]{file.toString()}, null,
-                    new MediaScannerConnection.OnScanCompletedListener() {
-                        public void onScanCompleted(String path, Uri uri) {
-                            Log.i("ExternalStorage", "Scanned " + path + ":");
-                            Log.i("ExternalStorage", "-> uri=" + uri);
-                        }
-                    });
-
-            Toast.makeText(getBaseContext(),
-                    "Done writing SD 'mysdfile.txt'",
-                    Toast.LENGTH_SHORT).show();
-            Log.v("writing file", "Done writing to path " + path);
-        } catch (FileNotFoundException e) {
-            Log.v("write file not found", e.getMessage());
-        } catch (UnsupportedEncodingException e) {
-            Log.v("UnsupportedEncoding", e.getMessage());
-        } catch (IOException e) {
-            Log.v("IO exception", e.getMessage());
-        }
-
-    }
 }

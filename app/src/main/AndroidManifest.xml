@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
+    <uses-permission android:name="android.permission.SEND_SMS" />
+
     <!--BLE scanning is commonly used to determine a user's
         location with Bluetooth LE beacons. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
